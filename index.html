@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="normalize.css" />
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="header">
+            <a class="logo" href="#">
+                <img
+                    src="logo.png"
+                    alt="facebook"
+                    class="logo__img" />
+            </a>
+        </div>
+        <div class="calendar">
+            <div class="calendar__timeline">
+                <script type="text/html" id="time_period_yes">
+                    <div class="time time_period_yes">
+                        <span class="time__hours"><%=hours%></span>
+                        <span class="time__period"><%=period%></span>
+                    </div>
+                </script>
+                <script type="text/html" id="time">
+                    <div class="time"><%=hours%></div>
+                </script>
+            </div>
+            <div class="calendar__events">
+                <div class="calendar__events-inner">
+                    <!-- marked up with hCalendar -->
+                    <script type="text/html" id="event">
+                        <div
+                            class="event vevent"
+                            style="top:<%=top%>px;left:<%=left%>%;width:<%=width%>%;height:<%=height%>px">
+                            <div class="event__title summary">Sample Item</div>
+                            <div class="event__location location">Sample Location</div>
+                        </div>
+                    </script>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="tmpl.js"></script>
+        <script type="text/javascript" src="script.js"></script>
+    </body>
+</html>
