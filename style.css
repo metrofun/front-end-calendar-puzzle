@@ -4,89 +4,113 @@ body
 }
 .header
 {
-    margin: 0 12px;
+    position: relative;
+
     height: 27px;
-    background-color: #4b6ea9;
+    margin: 0 12px;
+
     border: 1px solid #30599a;
     border-bottom-right-radius: 3px;
     border-bottom-left-radius: 3px;
-    position: relative;
+    background-color: #4b6ea9;
 }
 .logo
 {
     position: absolute;
     top: 50%;
     left: 9px;
+
     margin-top: -8px;
 }
 .logo__img
 {
-    height: 16px;
     width: 75px;
+    height: 16px;
 }
 .calendar
 {
     margin-top: 60px;
+
     white-space: nowrap;
 }
 .calendar__timeline
 {
     position: relative;
     top: 1px;
+
     display: inline-block;
-    text-align: right;
+
     width: 100px;
     padding-right: 5px;
+
+    text-align: right;
 }
 .calendar__events
 {
-    white-space: normal;
     display: inline-block;
-    padding: 0 10px;
+
     height: 720px;
+    padding: 0 10px;
+
+    white-space: normal;
+
     border-left: 1px solid #d6d6d6;
     background-color:  #ececec;
 }
 .calendar__events-inner
 {
-    width: 600px;
     position: relative;
+
+    width: 600px;
 }
 .time
 {
-    line-height: 18px;
     height: 29.8px;
-    font-size: 9px;
+
     color: #b0b0b0;
+
+    font-size: 9px;
+    line-height: 18px;
 }
 .time__hours
 {
     color: #707070;
+
     font-size: 13px;
 }
 .event
 {
     position: absolute;
-    background: white;
-    box-sizing: border-box;
-    border-left: 4px solid #4b6ea9;
+
     overflow: hidden;
+
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
+    border-left: 4px solid #4b6ea9;
+    background: white;
 }
 .event__inner
 {
-    border: 1px solid #d6d6d6;
-    border-left: none;
+    -moz-box-sizing: border-box;
     box-sizing: border-box;
     height: 100%;
+
+    border: 1px solid #d6d6d6;
+    border-left: none;
 }
 .event__title
 {
     overflow: hidden;
-    font-size: 12px;
-    color: #4b6ea9;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+
     padding: 7px 0 0 7px;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    color: #4b6ea9;
+
+    font-size: 12px;
 }
 .event__hidden
 {
@@ -94,8 +118,11 @@ body
 }
 .event__location
 {
-    font-size: 9px;
-    color: #999;
     overflow: hidden;
+
     padding-left: 7px;
+
+    color: #999;
+
+    font-size: 9px;
 }
