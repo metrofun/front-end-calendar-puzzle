@@ -2,53 +2,74 @@
 
 (function () {
     /**
-     * Creates a new vertex of tree,
-     * that represents an event
+     * Returns groups of not colliding in time events
      *
-     * @constuctor
+     * @param {<Array<Object>>} events
      *
-     * @param {Object} item
-     * @param {Number} [item.start = 0] beginning of event
-     * @param {Number} [item.end = 0] end of event
+     * @returns {<Array<Array>>}
      */
-    function Vertex(item) {
-        item = item || {};
-        this.start = item.start || 0;
-        this.end = item.end || 0;
-        this.maxSubtreeEnd = this.end;
-        this.height = 1;
-        this.childs = [];
+    function collideEvents(events) {
+        var groups = [], lastGroup, maxGroupEnd = 0;
+        // filter and sort ascending by start time
+        events.sort(function (a, b) {
+            return a.start > b.start ? 1:(a.start === b.start ? 0:-1);
+        }).forEach(function (event) {
+            if (!lastGroup || maxGroupEnd < event.start) {
+                lastGroup = [event];
+                groups.push(lastGroup);
+                maxGroupEnd = event.end;
+            } else {
+                lastGroup.push(event);
+                maxGroupEnd = Math.max(maxGroupEnd, event.end);
+            }
+        });
+
+        return groups;
     }
-    Vertex.prototype = {
-        /**
-         * Adds new childs to the vertex,
-         * and sets correct height of tree rooted in current vertex
-         *
-         * @param {Object} item
-         * @param {Object} [item.start = 0] beginning of event
-         * @param {Object} [item.end = 0] end of event
-         *
-         * @returns {Number} this.height, current height of tree
-         */
-        addChild: function (item) {
-            var lastChild;
+    /**
+     * Compact events into fewest number of columns
+     * and returns these columns.
+     * To minimize columns number,
+     * we maximize events number in a single column using next approach:
+     * we take event with closest ending time and any start time,
+     * but not colliding with existing events in a column
+     *
+     * @param {Array} events
+     *
+     * @returns {Array}
+     */
+    function compactEvents(events) {
+        var columns = [], firstEndEvent;
 
-            if (item.end > this.maxSubtreeEnd) {
-                this.maxSubtreeEnd = item.end;
-            }
-            if (this.childs.length) {
-                lastChild = this.childs[this.childs.length - 1];
-                if (lastChild.end > item.start) {
-                    this.height = lastChild.addChild(item) + 1;
-                    return this.height;
+        events = events.sort(function (a, b) {
+            return a.end > b.end ? 1:(a.end === b.end ? 0:-1);
+        });
+
+        if (events.length) {
+            firstEndEvent = events.shift();
+            columns.push({
+                events: [firstEndEvent],
+                maxEnd: firstEndEvent.end
+            });
+
+            events.forEach(function (event) {
+                var isFitting = columns.some(function (column) {
+                    if (event.start >= column.maxEnd) {
+                        column.maxEnd = event.end;
+                        return column.events.push(event);
+                    }
+                });
+                if (!isFitting) {
+                    columns.push({
+                        events: [event],
+                        maxEnd: event.end
+                    });
                 }
-            }
-            this.height = 2;
-            this.childs.push(new Vertex(item));
-            return this.height;
+            });
         }
-    };
 
+        return columns;
+    }
     /**
      * @param {Object} event
      * @param {Number} event.start
@@ -57,102 +78,28 @@
      * @returns {Boolean}
      */
     function isEventValid(event) {
-        return (event.start >= 0)
+        var MINIMUM_START_TIME = 0,
+            MAXINUM_END_TIME = 720;
+
+        return (event.start >= MINIMUM_START_TIME)
             && (event.end >= event.start)
-            && (event.end <= 720);
+            && (event.end <= MAXINUM_END_TIME);
     }
     /**
-     * Disgards all invalid input items,
-     * builds tree of remaining event items
-     * and returns  array of event trees
+     * Returns human time in format: "hh:mm AM/PM"
+     * for minutes since 09:00 AM
      *
-     * @param {Array} input
-     *
-     * @returns {Array} array of tree roots
-     */
-    function buildEventsTrees(input) {
-        var rootVertex = new Vertex();
-
-        // filter and sort ascending by start time
-        input = input.filter(isEventValid).sort(function (a, b) {
-            return a.start > b.start ? 1:(a.start === b.start ? 0:-1);
-        });
-        input.forEach(function (item) {
-            rootVertex.addChild(item);
-        });
-
-        return rootVertex.childs;
-    }
-
-    /**
-     * Collides event trees in time,
-     * and returns tree groups with maximum height of tree in group.
-     * Height of tree corrsponds to number of columns with events
-     *
-     * @param {Array} trees
-     *
-     * @returns {<Array>} Each item contains 'height' and 'tree' properties
-     */
-    function collideTrees(trees) {
-        var collidingGroups = [];
-
-        trees
-            .sort(function (a, b) {
-                return a.maxSubtreeEnd > b.maxSubtreeEnd ? 1:(a.maxSubtreeEnd === b.maxSubtreeEnd ? 0:-1);
-            })
-            .forEach(function (vertex) {
-                var length = collidingGroups.length,
-                    lastTree, lastVertex;
-
-                if (length) {
-                    lastTree = collidingGroups[length - 1];
-                    lastVertex = lastTree.trees[lastTree.trees.length - 1];
-                    if (vertex.start < lastVertex.maxSubtreeEnd) {
-                        lastTree.columns = Math.max(lastTree.columns, vertex.height);
-                        lastTree.trees.push(vertex);
-                        return;
-                    }
-                }
-                collidingGroups.push({
-                    height: vertex.height,
-                    trees: [vertex]
-                });
-            });
-
-        return collidingGroups;
-    }
-
-    /**
-     * Recursively builds html of events in a tree.
-     *
-     * @param {Object} params
-     * @param {Vertex} params.root Root vertex of a tree
-     * @param {Number} params.columns Number of columns in a event grid
-     * @param {Number} params.offset Grid offset for the tree
+     * @param {Number} offset minutes since 09:00 AM
      *
      * @returns {String}
      */
-    function getEventTreeHtml(params) {
-        var root = params.root,
-            width = 100 / params.columns,
-            htmlTokens = [tmpl('event', {
-                top: root.start,
-                left:  width * params.offset,
-                width: width,
-                height: root.end - root.start
-            })];
+    function getHumanTime(offset) {
+        var hours = 9 + Math.floor(offset / 60),
+            minutes = offset % 60,
+            period = hours < 12 ? 'AM':'PM';
 
-        root.childs.forEach(function (vertex) {
-            htmlTokens.push(getEventTreeHtml({
-                root: vertex,
-                offset: params.offset + 1,
-                columns: params.columns
-            }));
-        });
-
-        return htmlTokens.join('');
+        return [hours % 12, ':', (minutes > 9 ? minutes:'0' + minutes), ' ', period].join('');
     }
-
     /**
      * Displays all valid events on a timeline
      *
@@ -161,19 +108,39 @@
     function layOutDay(input) {
         var htmlTokens = [];
 
-        collideTrees(buildEventsTrees(input)).forEach(function (group) {
-            group.trees.forEach(function (tree) {
-                htmlTokens.push(getEventTreeHtml({
-                    root: tree,
-                    offset: 0,
-                    columns: group.height
-                }));
+        collideEvents(input.filter(isEventValid)).forEach(function (events) {
+            compactEvents(events).forEach(function (column, offset, columns) {
+                // width in percents
+                var width = 100 / columns.length;
+
+                column.events.forEach(function (event) {
+                    var startDate = new Date();
+
+                    startDate.setUTCHours(
+                        Math.floor(9 + (event.start / 60)),
+                        event.start % 60,
+                        0,
+                        0
+                    );
+
+                    htmlTokens.push([tmpl('event', {
+                        top: event.start,
+                        left:  width * offset,
+                        width: width,
+                        height: event.end - event.start,
+                        startTime: getHumanTime(event.start),
+                        endTime: getHumanTime(event.end),
+                        dtstart: startDate.toISOString()
+                    })]);
+                });
             });
         });
 
         document.querySelector('.calendar__events-inner').innerHTML = htmlTokens.join('');
     }
-
+    /**
+     * Displays axis of timeline
+     */
     function layOutAxis() {
         var i, hour, period, htmlTokens = [];
 

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Front End Calendar Puzzle for Facebook</title>
+        <!-- intentionally not concatenated and minimized -->
         <link rel="stylesheet" href="normalize.css" />
         <link rel="stylesheet" href="style.css" />
     </head>
@@ -31,14 +33,19 @@
                     <script type="text/html" id="event">
                         <div
                             class="event vevent"
+                            title="Sample Item: <%=startTime%> - <%=endTime%>"
                             style="top:<%=top%>px;left:<%=left%>%;width:<%=width%>%;height:<%=height%>px">
-                            <div class="event__title summary">Sample Item</div>
-                            <div class="event__location location">Sample Location</div>
+                            <div class="event__inner">
+                                <div class="event__title summary">Sample Item</div>
+                                <div class="event__hidden dtstart"><%=dtstart%></div>
+                                <p class="event__location location">Sample Location</p>
+                            </div>
                         </div>
                     </script>
                 </div>
             </div>
         </div>
+        <!-- intentionally not concatenated and minimized -->
         <script type="text/javascript" src="tmpl.js"></script>
         <script type="text/javascript" src="script.js"></script>
     </body>
