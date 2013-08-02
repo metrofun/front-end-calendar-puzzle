@@ -10,10 +10,7 @@
     <body>
         <div class="header">
             <a class="logo" href="#">
-                <img
-                    src="logo.png"
-                    alt="facebook"
-                    class="logo__img" />
+                <img src="logo.png" alt="facebook" class="logo__img" />
             </a>
         </div>
         <div class="calendar">
@@ -30,7 +27,7 @@
             </div>
             <div class="calendar__events">
                 <div class="calendar__events-inner">
-                    <!-- marked up with hCalendar -->
+                    <!-- marked up with hCalendar microformat -->
                     <script type="text/html" id="event">
                         <div
                             class="event vevent"
@@ -38,7 +35,7 @@
                             style="top:<%=top%>px;left:<%=left%>%;width:<%=width%>%;height:<%=height%>px">
                             <div class="event__inner">
                                 <div class="event__title summary">Sample Item</div>
-                                <div class="event__hidden dtstart"><%=dtstart%></div>
+                                <div class="event__hidden dtstart"><%=startDate%></div>
                                 <p class="event__location location">Sample Location</p>
                             </div>
                         </div>
@@ -47,6 +44,7 @@
             </div>
         </div>
         <!-- intentionally not concatenated and minimized -->
+        <!-- John Resig JavaScript Micro-Templating -->
         <script type="text/javascript" src="tmpl.js"></script>
         <script type="text/javascript" src="script.js"></script>
     </body>

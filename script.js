@@ -1,5 +1,4 @@
 /*global tmpl */
-
 (function () {
     /**
      * Returns groups of not colliding in time events
@@ -9,8 +8,11 @@
      * @returns {<Array<Array>>}
      */
     function collideEvents(events) {
-        var groups = [], lastGroup, maxGroupEnd = 0;
-        // filter and sort ascending by start time
+        var groups = [],
+            lastGroup,
+            // stores maximum end-time of events in the lastGroup
+            maxGroupEnd = 0;
+
         events.sort(function (a, b) {
             return a.start > b.start ? 1:(a.start === b.start ? 0:-1);
         }).forEach(function (event) {
@@ -36,16 +38,19 @@
      *
      * @param {Array} events
      *
-     * @returns {Array}
+     * @returns {Array} Columns
      */
     function compactEvents(events) {
-        var columns = [], firstEndEvent;
+        var columns = [],
+            firstEndEvent;
 
         events = events.sort(function (a, b) {
             return a.end > b.end ? 1:(a.end === b.end ? 0:-1);
         });
 
         if (events.length) {
+            // initialize columns with a single column,
+            // that contains event with closest end-time
             firstEndEvent = events.shift();
             columns.push({
                 events: [firstEndEvent],
@@ -53,12 +58,15 @@
             });
 
             events.forEach(function (event) {
+                // try to fit an event into exisiting columns
                 var isFitting = columns.some(function (column) {
                     if (event.start >= column.maxEnd) {
                         column.maxEnd = event.end;
                         return column.events.push(event);
                     }
                 });
+                // create a new column from event,
+                // if it doesn't fit
                 if (!isFitting) {
                     columns.push({
                         events: [event],
@@ -101,26 +109,35 @@
         return [hours % 12, ':', (minutes > 9 ? minutes:'0' + minutes), ' ', period].join('');
     }
     /**
-     * Displays all valid events on a timeline
+     * Displays all valid events on a timeline.
+     *
+     * Every event snippet will have a title attribute,
+     * useful when content is overflowed (e.g. too short event).
+     * Event snippet follows hCalendar microformat
+     * @see http://microformats.org/wiki/hcalendar
      *
      * @param {Array} input
      */
     function layOutDay(input) {
         var htmlTokens = [];
 
+        // disgard invalid events and group them into not colliding groups
         collideEvents(input.filter(isEventValid)).forEach(function (events) {
+            // every group of events should be compactly distributed into columns
             compactEvents(events).forEach(function (column, offset, columns) {
-                // width in percents
+                // generate html for every event in a column
+
                 var width = 100 / columns.length;
 
                 column.events.forEach(function (event) {
+                    // startDate is required by hCalendar
                     var startDate = new Date();
 
                     startDate.setUTCHours(
-                        Math.floor(9 + (event.start / 60)),
-                        event.start % 60,
-                        0,
-                        0
+                        Math.floor(9 + (event.start / 60)), //hours
+                        event.start % 60, //minutes
+                        0, //seconds
+                        0 //milliseconds
                     );
 
                     htmlTokens.push([tmpl('event', {
@@ -130,7 +147,7 @@
                         height: event.end - event.start,
                         startTime: getHumanTime(event.start),
                         endTime: getHumanTime(event.end),
-                        dtstart: startDate.toISOString()
+                        startDate: startDate.toISOString()
                     })]);
                 });
             });
@@ -170,5 +187,5 @@
     ]);
 
     // expose to global
-    window.layOutDay = layOutDay;
-})();
+    this.layOutDay = layOutDay;
+}).call(this);
