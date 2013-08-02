@@ -1,4 +1,8 @@
-body
+/**
+ * CSS naming convention follows BEM methodology
+ * see http://bem.info/method/definitions/
+ */
+.page
 {
     font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
 }
