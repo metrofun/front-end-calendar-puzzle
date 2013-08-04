@@ -1,5 +1,6 @@
 /*global tmpl */
 (function (tmpl) {
+    // Timeline upper bound in minutes
     var MAXINUM_END_TIME = 720;
     /**
      * Returns groups of not colliding in time events
