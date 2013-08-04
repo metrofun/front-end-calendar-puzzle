@@ -1,11 +1,12 @@
 /*global tmpl */
-(function () {
+(function (tmpl) {
+    var MAXINUM_END_TIME = 720;
     /**
      * Returns groups of not colliding in time events
      *
-     * @param {<Array<Object>>} events
+     * @param {Array} events
      *
-     * @returns {<Array<Array>>}
+     * @returns {Array} Groups of colliding events
      */
     function collideEvents(events) {
         var groups = [],
@@ -34,7 +35,7 @@
      * To minimize columns number,
      * we maximize events number in a single column using next approach:
      * we take event with closest ending time and any start time,
-     * but not colliding with existing events in a column
+     * but not colliding with existing events in a column/
      *
      * @param {Array} events
      *
@@ -65,7 +66,7 @@
                         return column.events.push(event);
                     }
                 });
-                // create a new column from event,
+                // create a new column from an event,
                 // if it doesn't fit
                 if (!isFitting) {
                     columns.push({
@@ -79,6 +80,14 @@
         return columns;
     }
     /**
+     * Disgards event with formally incorrect start and end times.
+     *
+     * @example
+     * // returns false
+     * isEventValid({start: 50, end: 20});
+     * isEventValid({start: -10, end: 20});
+     * isEventValid({start: 10, end: 9999});
+     *
      * @param {Object} event
      * @param {Number} event.start
      * @param {Number} event.end
@@ -86,15 +95,31 @@
      * @returns {Boolean}
      */
     function isEventValid(event) {
-        var MINIMUM_START_TIME = 0,
-            MAXINUM_END_TIME = 720;
-
-        return (event.start >= MINIMUM_START_TIME)
+        return (event.start >= 0)
             && (event.end >= event.start)
             && (event.end <= MAXINUM_END_TIME);
     }
     /**
-     * Returns human time in format: "hh:mm AM/PM"
+     * Returns hours, minutes and period information
+     * for minutes since 09:00 AM
+     *
+     * @param {Number} offset Minutes since 09:00 AM
+     *
+     * @returns {{hours: String, minutes: String, period: String}}
+     */
+    function getTimeFromMinutes(offset) {
+        var hours = 9 + Math.floor(offset / 60),
+            minutes = offset % 60,
+            period = hours < 12 ? 'AM':'PM';
+
+        return {
+            hours: String(hours % 12),
+            minutes: String(minutes > 9 ? minutes:'0' + minutes),
+            period: period
+        };
+    }
+    /**
+     * Returns human time in a format: "hh:mm AM/PM"
      * for minutes since 09:00 AM
      *
      * @param {Number} offset minutes since 09:00 AM
@@ -102,11 +127,9 @@
      * @returns {String}
      */
     function getHumanTime(offset) {
-        var hours = 9 + Math.floor(offset / 60),
-            minutes = offset % 60,
-            period = hours < 12 ? 'AM':'PM';
+        var timeInfo = getTimeFromMinutes(offset);
 
-        return [hours % 12, ':', (minutes > 9 ? minutes:'0' + minutes), ' ', period].join('');
+        return [timeInfo.hours, ':', timeInfo.minutes, ' ', timeInfo.period].join('');
     }
     /**
      * Displays all valid events on a timeline.
@@ -156,24 +179,16 @@
         document.querySelector('.calendar__events-inner').innerHTML = htmlTokens.join('');
     }
     /**
-     * Displays axis of timeline
+     * Displays axis of a timeline
      */
     function layOutAxis() {
-        var i, hour, period, htmlTokens = [];
+        var minutes, step = 30, htmlTokens = [];
 
-        for (i = 8; i < 21; i++) {
-            hour = i % 12 + 1;
-            period = i < 11 ? 'AM':'PM';
-            htmlTokens.push(tmpl('time_period_yes', {
-                hours: hour + ':00',
-                period: period
-            }));
-            if (i < 20) {
-                htmlTokens.push(tmpl('time', {
-                    hours: hour + ':30',
-                    period: period
-                }));
-            }
+        for (minutes = 0; minutes <= MAXINUM_END_TIME; minutes += step) {
+            htmlTokens.push(tmpl(
+                minutes % 60 ? 'time':'time_period_yes',
+                getTimeFromMinutes(minutes)
+            ));
         }
         document.querySelector('.calendar__timeline').innerHTML = htmlTokens.join('');
     }
@@ -188,4 +203,4 @@
 
     // expose to global
     this.layOutDay = layOutDay;
-}).call(this);
+}).call(this, tmpl);
