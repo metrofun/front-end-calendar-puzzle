@@ -40,7 +40,7 @@
 .calendar__timeline
 {
     position: relative;
-    top: 1px;
+    top:  -8px;
 
     display: inline-block;
 
@@ -48,6 +48,7 @@
     padding-right: 5px;
 
     text-align: right;
+    vertical-align: top;
 }
 .calendar__events
 {
@@ -56,6 +57,7 @@
     height: 720px;
     padding: 0 10px;
 
+    vertical-align: top;
     white-space: normal;
 
     border-left: 1px solid #d6d6d6;
